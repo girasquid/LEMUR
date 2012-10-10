@@ -27,4 +27,4 @@ set :deploy_to, '/home/deploy/yourapplication'
 set :repository, 'your git repository (git@github.com:username/reponame.git)'
 
 after 'deploy:update', 'bundle:install'
-
+after 'deploy:restart', 'unicorn:reload'
