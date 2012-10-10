@@ -153,6 +153,8 @@ echo "}" >> "/etc/nginx/sites-available/$APPNAME"
 
 sudo ln -s "/etc/nginx/sites-available/$APPNAME" "/etc/nginx/sites-enabled/$APPNAME"
 
+sudo apt-get -y install git-core
+
 # ruby install from http://lenni.info/blog/2012/05/installing-ruby-1-9-3-on-ubuntu-12-04-precise-pengolin/
 sudo apt-get update
 sudo apt-get -y install ruby1.9.1 ruby1.9.1-dev \
