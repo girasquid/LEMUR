@@ -52,13 +52,13 @@ function user_ssh_keygen {
 
 function add_known_hosts {
 	# $1 - username
-  sudo -u $1 -i -- "ssh-keyscan 'github.com' >> ~/.ssh/known_hosts"
+    ssh-keyscan github.com | tee /home/$1/.ssh/known_hosts
+    chown $1:$1 /home/$1/.ssh/known_hosts
 }
 
 function add_ssh_keys {
 	# $1 - username
-        system_user_add_ssh_key "$1" "TEAM MEMBER 1 PUBLIC KEY HERE"
-        system_user_add_ssh_key "$1" "TEAM MEMBER 2 PUBLIC KEY HERE"
+   system_user_add_ssh_key "$1" "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC05Z8iizgPtatLLVWGi+NhyUKTpuJ4627OLMNHobjnMRVgXdK9gtvjV+JGWFcMNUvKY61pfK+HufmXO/nEpUFVwiOCNcpIAneEouIeCYuyy0Sjo5QvtlLmrglAVvw0qB6jXqnAy4DG7TrTF2+hI+GvusBgBMrNGzk5GV/aivYXiQiuyTonqE9OMcdS81zXRwN3HdZ+YFJMYzskOVlgDtc/cpVkAyPNN2exhPb6777EO7+qe8c9DIaU2+9kypprs2+lccQs3STjlGclrlfnu4NzFg6Wmu0xQ19h+cJugKFnm3tcwGzXnp2tQFL2f3w4Q3uinUhX3O0aROz7cJi2Wsvt ryan@system88.com"
 }
 
 function set_host_names  {
@@ -174,8 +174,9 @@ sudo update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby1.9.1 400 \
 sudo update-alternatives --config ruby
 sudo update-alternatives --config gem
 
-apt-get -y install rubygems
 sudo gem install bundler
 
 sudo mkdir -p /home/deploy
 sudo chown "$USER_NAME" /home/deploy
+
+
