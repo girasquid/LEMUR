@@ -6,10 +6,12 @@ A Linode Stack Script which will setup Linux - Nginx - MySQL - Unicorn - Rails
 Ruby 1.9.3  
 Tested on Ubuntu 12.04
 
-
 Getting Started
 -------------
-1.  Install with stack script on linode  (make sure to update the SSH keys in the script so you can login to the server)  
+You'll need to replace 'yourapplication' with the name of your application (no spaces allowed, use underscores!)
+when walking through on Linode. You'll also need to drop in your public key into the place where it says "YOUR_SSH_KEY_HERE" (you can add multiple if you're adding a team).
+
+1.  Install with stack script on Linode  (make sure to update the SSH keys in the script so you can login to the server)
 2.  Update your gemfile to look like this:
 ```ruby
 source 'https://rubygems.org'
@@ -39,9 +41,9 @@ gem 'jquery-rails'
 require 'capistrano-deploy'
 use_recipes :git, :bundle, :rails, :unicorn, :rails_assets
 
-server '50.116.0.17', :web, :app, :db, :primary => true
+server '50.116.2.69', :web, :app, :db, :primary => true
 set :user, 'deploy'
-set :deploy_to, '/home/deploy/yourapplication'
+set :deploy_to, '/home/deploy/yourapplication/current'
 set :repository, 'git@github.com:RyanonRails/test-repo.git'
 
 ssh_options[:forward_agent] = true
@@ -49,11 +51,18 @@ ssh_options[:forward_agent] = true
 after 'deploy:update', 'bundle:install'
 after 'deploy:update', 'deploy:assets:precompile'
 after 'deploy:restart', 'unicorn:reload'
+
+namespace :deploy do
+  desc "Set up the unicorns"
+  task :unicorn_power, :roles => :db do
+    run "mkdir #{deploy_to}/tmp/pids/"
+    run "mkdir #{deploy_to}/tmp/sockets/"
+    run "cd #{deploy_to} && bundle exec unicorn -c #{deploy_to}/config/unicorn.rb -E production -D"
+  end
+end
 ```
 4.  Create a file unicorn.rb (in the config folder) and make it look like this:
 ```ruby
-# unicorn_rails -c config/unicorn.rb -E production -D
-#
 # Sample verbose configuration file for Unicorn (not Rack)
 #
 # This configuration file documents many features of Unicorn
@@ -90,7 +99,7 @@ pid "/home/deploy/#{application}/current/tmp/pids/unicorn.pid"
 # Additionally, ome applications/frameworks log to stderr or stdout,
 # so prevent them from going to /dev/null when daemonized here:
 stderr_path "/home/deploy/#{application}/current/log/unicorn.stderr.log"
-stdout_path "/home/deploy#{application}/current/log/unicorn.stdout.log"
+stdout_path "/home/deploy/#{application}/current/log/unicorn.stdout.log"
 
 # combine REE with "preload_app true" for memory savings
 # http://rubyenterpriseedition.com/faq.html#adapt_apps_for_cow
@@ -164,30 +173,15 @@ end
 4.  run 'bundle install'
 5.  Push all of your code to your repo on github
 6.  run 'cap deploy:setup'
-7.  then run 'cap deploy:migrations'
-8.  run 'cap deploy'
+7.  run 'cap deploy:unicorn_power'
+8.  run 'cap deploy:migrations'
+9.  ssh to the ip and run: sudo /etc/init.d/nginx restart (pw:WAFFLES123!)
+10.  open ip in browser, you should see your site!
 
+Going forward with changes and such you'll need to run
+run 'cap deploy:migrations'
+run 'cap deploy'
 
-
-
-Start the web server
-sudo /etc/init.d/nginx start
-
-Fire up the Unicorns
-mkdir /home/deploy/yourapplication/current/tmp/pids/
-bundle exec unicorn -c /home/deploy/yourapplication/current/config/unicorn.rb -D
-
-
-
-
-
-# do on remote box
-ssh -T git@github.com
-  ssh-keyscan github.com | tee /home/$1/.ssh/known_hosts
-  chown $1:$1 /home/$1/.ssh/known_hosts
-
-Nginx will fail until you deploy with capistrano, once you've deployed run:
-
-sudo /etc/init.d/nginx start
-
-unicorn_rails -c /home/deploy/yourapplication/current/config/unicorn.rb -D
+Example app:
+This repo has been deployed with LEMUR (you can view the Gemfile/Capfile/unicorn.rb/database.yml there if you'd like)
+https://github.com/RyanonRails/test-repo

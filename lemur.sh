@@ -58,7 +58,7 @@ function add_known_hosts {
 
 function add_ssh_keys {
 	# $1 - username
-   system_user_add_ssh_key "$1" "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC05Z8iizgPtatLLVWGi+NhyUKTpuJ4627OLMNHobjnMRVgXdK9gtvjV+JGWFcMNUvKY61pfK+HufmXO/nEpUFVwiOCNcpIAneEouIeCYuyy0Sjo5QvtlLmrglAVvw0qB6jXqnAy4DG7TrTF2+hI+GvusBgBMrNGzk5GV/aivYXiQiuyTonqE9OMcdS81zXRwN3HdZ+YFJMYzskOVlgDtc/cpVkAyPNN2exhPb6777EO7+qe8c9DIaU2+9kypprs2+lccQs3STjlGclrlfnu4NzFg6Wmu0xQ19h+cJugKFnm3tcwGzXnp2tQFL2f3w4Q3uinUhX3O0aROz7cJi2Wsvt ryan@system88.com"
+   system_user_add_ssh_key "$1" "ssh-rsa AAAbbbb_YOUR_SSH_KEY_HERE"
 }
 
 function set_host_names  {
@@ -114,7 +114,7 @@ echo "}" >> "/etc/nginx/sites-available/$APPNAME"
 echo "" >> "/etc/nginx/sites-available/$APPNAME"
 echo "server {" >> "/etc/nginx/sites-available/$APPNAME"
 echo "  listen 80;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  server_name $DOMAIN;" >> "/etc/nginx/sites-available/$APPNAME"
+echo "  server_name $DOMAIN $(system_primary_ip);" >> "/etc/nginx/sites-available/$APPNAME"
 echo "" >> "/etc/nginx/sites-available/$APPNAME"
 echo "  access_log /home/deploy/$APPNAME/current/log/access.log;" >> "/etc/nginx/sites-available/$APPNAME"
 echo "  error_log /home/deploy/$APPNAME/current/log/error.log;" >> "/etc/nginx/sites-available/$APPNAME"
@@ -179,4 +179,6 @@ sudo gem install bundler
 sudo mkdir -p /home/deploy
 sudo chown "$USER_NAME" /home/deploy
 
-
+# this will fail with a bad config (until we get our files in place via capistrano),
+#  the goal here is to just start nginx
+sudo /etc/init.d/nginx start
