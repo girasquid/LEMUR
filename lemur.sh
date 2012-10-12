@@ -52,24 +52,24 @@ function user_ssh_keygen {
 }
 
 function add_known_hosts {
-	# $1 - username
+  # $1 - username
     ssh-keyscan github.com | tee /home/$1/.ssh/known_hosts
     chown $1:$1 /home/$1/.ssh/known_hosts
 }
 
 function add_ssh_keys {
-	# $1 - username
+  # $1 - username
    system_user_add_ssh_key "$1" "$THE_SSH_KEY"
 }
 
 function set_host_names  {
-	# set hostname
-	echo $1 > /etc/hostname
+  # set hostname
+  echo $1 > /etc/hostname
 
-	# apply hostname to hosts file
-	sed -i "/^127.0.0.1/a\
-	$2 $1
-	" /etc/hosts
+  # apply hostname to hosts file
+  sed -i "/^127.0.0.1/a\
+  $2 $1
+  " /etc/hosts
 }
 
 source <ssinclude StackScriptID="1">
@@ -106,48 +106,49 @@ mysql_grant_user "$DB_PASSWORD" "$DB_USER" "$DB_NAME"
 
 sudo apt-get -y install nginx
 
-echo "upstream app_server {" > "/etc/nginx/sites-available/$APPNAME"
-echo "  server unix:/home/deploy/$APPNAME/current/tmp/sockets/unicorn.sock fail_timeout=0;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "}" >> "/etc/nginx/sites-available/$APPNAME"
-echo "" >> "/etc/nginx/sites-available/$APPNAME"
-echo "server {" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  listen 80;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  server_name $DOMAIN $(system_primary_ip);" >> "/etc/nginx/sites-available/$APPNAME"
-echo "" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  access_log /home/deploy/$APPNAME/current/log/access.log;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  error_log /home/deploy/$APPNAME/current/log/error.log;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  root /home/deploy/$APPNAME/current/public/;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  location / {" >> "/etc/nginx/sites-available/$APPNAME"
-echo '    proxy_set_header X-Real-IP $remote_addr;' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    proxy_set_header Host $http_host;' >> "/etc/nginx/sites-available/$APPNAME"
-echo "    proxy_redirect off;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "" >> "/etc/nginx/sites-available/$APPNAME"
-echo '    # this is the meat of the rails page caching config' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    # it adds .html to the end of the url and then checks' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    # the filesystem for that file. If it exists, then we' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    # rewite the url to have explicit .html on the end  ' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    # and then send it on its way to the next config rule.' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    # if there is no file on the fs then it sets all the  ' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    # necessary headers and proxies to our upstream unicorns' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    if (-f $request_filename.html) {' >> "/etc/nginx/sites-available/$APPNAME"
-echo '      rewrite (.*) $1.html break;' >> "/etc/nginx/sites-available/$APPNAME"
-echo '    }' >> "/etc/nginx/sites-available/$APPNAME"
-echo "" >> "/etc/nginx/sites-available/$APPNAME"
-echo '    if (!-f $request_filename) {' >> "/etc/nginx/sites-available/$APPNAME"
-echo "      proxy_pass http://app_server;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "      break;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "    }" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  }" >> "/etc/nginx/sites-available/$APPNAME"
-echo "" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  error_page 500 502 503 504 /500.html;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  location /500.html {" >> "/etc/nginx/sites-available/$APPNAME"
-echo "    root /home/deploy/$APPNAME/current/public;" >> "/etc/nginx/sites-available/$APPNAME"
-echo "  }" >> "/etc/nginx/sites-available/$APPNAME"
-echo "" >> "/etc/nginx/sites-available/$APPNAME"
-echo "}" >> "/etc/nginx/sites-available/$APPNAME"
+cat > /etc/nginx/sites-available/$APPNAME <<EOF
+  upstream app_server {
+    server unix:/home/deploy/$APPNAME/current/tmp/sockets/unicorn.sock fail_timeout=0;
+  }
+
+  server {
+    listen 80;
+    server_name $DOMAIN ${system_primary_ip};
+
+    access_log /home/deploy/$APPNAME/current/log/access.log;
+    error_log /home/deploy/$APPNAME/current/log/error.log;
+
+    root /home/deploy/$APPNAME/current/public/;
+
+    location / {
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header Host \$http_host;
+      proxy_redirect off;
+
+      # This is the meat of the rails page caching config
+      # it adds .html to the end of the URL and then checks
+      # the filesystem for that file. If it exists, then we
+      # rewrite the URL to have explicit .html on the end
+      # and then send it on its way to the next config rule.
+      # If there is no file on the fs then it sets all the
+      # necessary headers and proxies to our upstream unicorns.
+      if (-f \$request_filename.html) {
+        rewrite (.*) \$1.html break;
+      }
+      if (!-f \$request_filename) {
+        proxy_pass http://app_server;
+        break;
+      }
+    }
+
+    error_page 500 502 503 504 /500.html;
+    location /500.html {
+      root /home/deploy/$APPNAME/current/public;
+    }
+
+  }
+EOF
 
 sudo ln -s "/etc/nginx/sites-available/$APPNAME" "/etc/nginx/sites-enabled/$APPNAME"
 
