@@ -95,9 +95,6 @@ system_sshd_append ClientAliveInterval 60
 user_ssh_keygen "$USER_NAME"
 add_known_hosts "$USER_NAME"
 
-echo "America/Edmonton" | tee /etc/timezone
-dpkg-reconfigure --frontend noninteractive tzdata
-
 mysql_install "$DB_PASSWORD"
 sudo apt-get -y install libmysqlclient-dev
 mysql_tune 30
