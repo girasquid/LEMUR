@@ -3,16 +3,17 @@ LEMUR
 
 A Linode Stack Script which will setup Linux - Nginx - MySQL - Unicorn - Rails
 
-Ruby 1.9.3  
+Ruby 1.9.3
 Tested on Ubuntu 12.04
 
 Getting Started
 -------------
 You'll need to replace 'yourapplication' with the name of your application (no spaces allowed, use underscores!)
-when walking through on Linode. You'll also need to drop in your public key into the place where it says "YOUR_SSH_KEY_HERE" (you can add multiple if you're adding a team).
+within (LEMUR/Capfile/unicorn.rb). You'll also need to drop in your public key into the place where it says "YOUR_SSH_KEY_HERE" (you can add multiple if you're adding a team) in the LEMUR script before you build your server on Linode.
 
-1.  Install with stack script on Linode  (make sure to update the SSH keys in the script so you can login to the server)
-2.  Update your gemfile to look like this:
+- Install with stack script on Linode  (make sure to update the SSH keys in the script so you can login to the server)
+- Update your gemfile to look like this:  
+
 ```ruby
 source 'https://rubygems.org'
 
@@ -35,8 +36,10 @@ group :assets do
 end
 
 gem 'jquery-rails'
-```
-3.  Create a Capfile in root and make it look like this:
+```  
+
+- Create a Capfile in root and make it look like this (update IP/repository):  
+
 ```ruby
 require 'capistrano-deploy'
 use_recipes :git, :bundle, :rails, :unicorn, :rails_assets
@@ -61,7 +64,9 @@ namespace :deploy do
   end
 end
 ```
-4.  Create a file unicorn.rb (in the config folder) and make it look like this:
+
+- Create a file unicorn.rb (in the config folder) and make it look like this (update application=):  
+
 ```ruby
 # Sample verbose configuration file for Unicorn (not Rack)
 #
@@ -169,19 +174,19 @@ after_fork do |server, worker|
   # between any number of forked children (assuming your kernel
   # correctly implements pread()/pwrite() system calls)
 end
-```
-4.  run 'bundle install'
-5.  Push all of your code to your repo on github
-6.  run 'cap deploy:setup'
-7.  run 'cap deploy:unicorn_power'
-8.  run 'cap deploy:migrations'
-9.  ssh to the ip and run: sudo /etc/init.d/nginx restart (pw:WAFFLES123!)
-10.  open ip in browser, you should see your site!
+```  
 
-Going forward with changes and such you'll need to run
-run 'cap deploy:migrations'
-run 'cap deploy'
+- Run 'bundle install'
+- Push all of your code to your repo on github
+- Run 'cap deploy:setup'
+- Run 'cap deploy:unicorn_power'
+- Run 'cap deploy:migrations'
+- Ssh to the ip and run: sudo /etc/init.d/nginx restart (pw:WAFFLES123!)
+- Open ip in browser, you should see your site!
+
+Going forward with changes you'll need to run
+- Run 'cap deploy:migrations'
+- Run 'cap deploy'
 
 Example app:
-This repo has been deployed with LEMUR (you can view the Gemfile/Capfile/unicorn.rb/database.yml there if you'd like)
-https://github.com/RyanonRails/test-repo
+- This test-repo (https://github.com/RyanonRails/test-repo) has been deployed with LEMUR (you can view the Gemfile/Capfile/unicorn.rb/database.yml there if you'd like).
