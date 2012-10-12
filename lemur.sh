@@ -42,6 +42,7 @@
 # <udf name="db_user" Label="Create MySQL User" default="superman" example="Optionally create this user" />
 # <udf name="db_user_password" Label="MySQL User's Password (OATMEAL123!)" default="OATMEAL123!" example="User's password" />
 # <udf name="rails_env" default="production" Label="Rails Environment" oneOf="development,test,staging,production" />
+# <udf name="the_ssh_key" Label="Your machine's public ssh key" />
 
 exec &> /root/script.log
 
@@ -58,7 +59,7 @@ function add_known_hosts {
 
 function add_ssh_keys {
 	# $1 - username
-   system_user_add_ssh_key "$1" "ssh-rsa AAAbbbb_YOUR_SSH_KEY_HERE"
+   system_user_add_ssh_key "$1" "$THE_SSH_KEY"
 }
 
 function set_host_names  {

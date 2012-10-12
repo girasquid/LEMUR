@@ -9,7 +9,7 @@ Tested on Ubuntu 12.04
 Getting Started
 -------------
 You'll need to replace 'yourapplication' with the name of your application (no spaces allowed, use underscores!)
-within (LEMUR/Capfile/unicorn.rb). You'll also need to drop in your public key into the place where it says "YOUR_SSH_KEY_HERE" (you can add multiple if you're adding a team) in the LEMUR script before you build your server on Linode.
+within (LEMUR/Capfile/unicorn.rb).
 
 - Install with stack script on Linode  (make sure to update the SSH keys in the script so you can login to the server)
 - Update your gemfile to look like this:  
@@ -181,7 +181,7 @@ end
 - Run 'cap deploy:setup'
 - Run 'cap deploy:unicorn_power'
 - Run 'cap deploy:migrations'
-- Ssh to the ip and run: sudo /etc/init.d/nginx restart (pw:WAFFLES123!)
+- Ssh to the ip (ssh deploy@ip) and run: sudo /etc/init.d/nginx restart (pw:WAFFLES123!)
 - Open ip in browser, you should see your site!
 
 Going forward with changes you'll need to run
